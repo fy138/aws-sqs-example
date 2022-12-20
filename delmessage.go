@@ -75,15 +75,17 @@ func main() {
 		fmt.Printf("Got an error while trying to retrieve message: %v", err)
 		return
 	}
+	for _, li := range msgRes.Messages {
+		//log.Printf("%#v", msgRes)
 
-	log.Printf("%#v", msgRes)
-
-	receiptHandle := msgRes.Messages[0].ReceiptHandle
-	err = DeleteMessage(sess, *urlRes.QueueUrl, receiptHandle)
-	if err != nil {
-		fmt.Printf("Got an error while trying to delete message: %v", err)
-		return
+		receiptHandle := li.ReceiptHandle
+		err = DeleteMessage(sess, *urlRes.QueueUrl, receiptHandle)
+		if err != nil {
+			fmt.Printf("Got an error while trying to delete message: %v", err)
+			return
+		}
+		log.Println("Message Body: " + *li.Body)
+		log.Println("Deleted message with handle: " + *receiptHandle)
 	}
 
-	fmt.Println("Deleted message with handle: " + *receiptHandle)
 }
