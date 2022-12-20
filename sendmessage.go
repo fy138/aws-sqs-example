@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/satori/go.uuid"
 )
 
 func GetQueueURL(sess *session.Session, queue string) (*sqs.GetQueueUrlOutput, error) {
@@ -25,13 +26,13 @@ func GetQueueURL(sess *session.Session, queue string) (*sqs.GetQueueUrlOutput, e
 
 func SendMessage(sess *session.Session, queueUrl string, messageBody string) error {
 	sqsClient := sqs.New(sess)
-	groupid := "abc"
+	groupid := "abd" //uuid.NewV4().String()
 	input := &sqs.SendMessageInput{
 		QueueUrl:       &queueUrl,
 		MessageBody:    aws.String(messageBody),
 		MessageGroupId: &groupid,
 	}
-	input.SetMessageDeduplicationId("def")
+	input.SetMessageDeduplicationId(uuid.NewV4().String())
 
 	_, err := sqsClient.SendMessage(input)
 
@@ -58,7 +59,7 @@ func main() {
 		fmt.Printf("Got an error while trying to create queue: %v", err)
 		return
 	}
-	for i := 1; i <= 3; i++ {
+	for i := 1; i <= 100; i++ {
 		messageBody := "This is a test message" + fmt.Sprintf("%v", i)
 		err = SendMessage(sess, *urlRes.QueueUrl, messageBody)
 		if err != nil {

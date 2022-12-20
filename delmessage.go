@@ -23,12 +23,12 @@ func GetQueueURL(sess *session.Session, queue string) (*sqs.GetQueueUrlOutput, e
 	return result, nil
 }
 
-func GetMessages(sess *session.Session, queueUrl string, maxMessages int) (*sqs.ReceiveMessageOutput, error) {
+func GetMessages(sess *session.Session, queueUrl string, maxMessages int64) (*sqs.ReceiveMessageOutput, error) {
 	sqsClient := sqs.New(sess)
 
 	msgResult, err := sqsClient.ReceiveMessage(&sqs.ReceiveMessageInput{
 		QueueUrl:            &queueUrl,
-		MaxNumberOfMessages: aws.Int64(1),
+		MaxNumberOfMessages: aws.Int64(maxMessages),
 	})
 
 	if err != nil {
@@ -69,12 +69,14 @@ func main() {
 		return
 	}
 
-	maxMessages := 1
+	var maxMessages int64 = 3
 	msgRes, err := GetMessages(sess, *urlRes.QueueUrl, maxMessages)
 	if err != nil {
 		fmt.Printf("Got an error while trying to retrieve message: %v", err)
 		return
 	}
+
+	log.Printf("%#v", msgRes)
 
 	receiptHandle := msgRes.Messages[0].ReceiptHandle
 	err = DeleteMessage(sess, *urlRes.QueueUrl, receiptHandle)
