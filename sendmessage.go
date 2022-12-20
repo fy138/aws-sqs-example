@@ -59,7 +59,7 @@ func main() {
 		fmt.Printf("Got an error while trying to create queue: %v", err)
 		return
 	}
-	for i := 1; i <= 100; i++ {
+	for i := 1; i <= 10; i++ {
 		messageBody := "This is a test message" + fmt.Sprintf("%v", i)
 		err = SendMessage(sess, *urlRes.QueueUrl, messageBody)
 		if err != nil {
