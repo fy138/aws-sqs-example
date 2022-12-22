@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -51,22 +52,29 @@ func main() {
 		return
 	}
 
-	queueName := "myqueueone.fifo"
+	queueName := "myqueuestandard"
 
 	urlRes, err := GetQueueURL(sess, queueName)
 	if err != nil {
 		fmt.Printf("Got an error while trying to create queue: %v", err)
 		return
 	}
+	log.Println(*urlRes.QueueUrl)
+	for {
+		time.Sleep(time.Second * 3)
+		maxMessages := 1
+		msgRes, err := GetMessages(sess, *urlRes.QueueUrl, maxMessages)
+		if err != nil {
+			fmt.Printf("Got an error while trying to retrieve message: %v", err)
+			time.Sleep(time.Second * 10)
+			continue
+		}
+		if len(msgRes.Messages) == 0 {
+			continue
+		}
+		log.Printf("%#v", *msgRes.Messages[0].Body)
 
-	maxMessages := 3
-	msgRes, err := GetMessages(sess, *urlRes.QueueUrl, maxMessages)
-	if err != nil {
-		fmt.Printf("Got an error while trying to retrieve message: %v", err)
-		return
 	}
-	log.Printf("%#v", msgRes)
-
 	//fmt.Println("Message Body: " + *msgRes.Messages[0].Body)
 	//fmt.Println("Message Handle: " + *msgRes.Messages[0].ReceiptHandle)
 }
